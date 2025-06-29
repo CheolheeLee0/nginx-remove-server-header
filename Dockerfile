@@ -1,27 +1,21 @@
-FROM nginx:alpine
+FROM ubuntu:latest
 
-# Install necessary packages
-RUN apk add --no-cache \
-    nginx-mod-http-headers-more \
-    curl
+# Install nginx-extras and curl
+RUN apt-get update && \
+    apt-get install -y nginx-extras curl && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
 
 # Copy custom nginx configuration
 COPY nginx.conf /etc/nginx/nginx.conf
 
 # Copy HTML files
-COPY html/ /usr/share/nginx/html/
+COPY html/ /var/www/html/
 
-# Load the headers-more module
-RUN echo "load_module modules/ngx_http_headers_more_filter_module.so;" > /etc/nginx/modules/headers-more.conf
-
-# Update nginx.conf to include the module
-RUN sed -i '1i\load_module modules/ngx_http_headers_more_filter_module.so;' /etc/nginx/nginx.conf
-
-# Create nginx user and set permissions
-RUN addgroup -g 101 -S nginx && \
-    adduser -S -D -H -u 101 -h /var/cache/nginx -s /sbin/nologin -G nginx nginx && \
-    chown -R nginx:nginx /var/cache/nginx && \
-    chown -R nginx:nginx /var/log/nginx && \
+# Create necessary directories and set permissions
+RUN mkdir -p /var/log/nginx && \
+    chown -R www-data:www-data /var/log/nginx && \
+    chown -R www-data:www-data /var/www/html && \
     chmod -R 755 /var/log/nginx
 
 # Expose port 80
