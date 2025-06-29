@@ -1,0 +1,1 @@
+# nginx-remove-server-header
